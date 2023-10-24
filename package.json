@@ -1,0 +1,185 @@
+{
+  "name": "@nordicsemiconductor/asset-tracker-cloud-firmware-aws",
+  "version": "0.0.0-development",
+  "description": "nRF Asset Tracker for AWS firmware.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NordicSemiconductor/asset-tracker-cloud-firmware-aws.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NordicSemiconductor/asset-tracker-cloud-firmware-aws/issues"
+  },
+  "homepage": "https://github.com/NordicSemiconductor/asset-tracker-cloud-firmware-aws#readme",
+  "keywords": [
+    "nrf-asset-tracker",
+    "iot",
+    "firmware",
+    "nrf-connect-sdk",
+    "aws",
+    "nrf9160",
+    "thingy91"
+  ],
+  "author": "Nordic Semiconductor ASA | nordicsemi.no",
+  "license": "Nordic-5-Clause",
+  "devDependencies": {
+    "@commitlint/config-conventional": "17.8.0",
+    "@nordicsemiconductor/asset-tracker-cloud-code-style": "12.0.98",
+    "js-yaml": "4.1.0"
+  },
+  "lint-staged": {
+    "*.{yml,md,js,json}": [
+      "prettier --write --config .prettierrc.js"
+    ]
+  },
+  "engines": {
+    "node": ">=18",
+    "npm": ">=9"
+  },
+  "release": {
+    "branches": [
+      "saga"
+    ],
+    "remoteTags": true,
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/github",
+        {
+          "successComment": false,
+          "failTitle": false
+        },
+        {
+          "assets": [
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-nodebug-*/merged.hex",
+              "name": "asset_tracker_v2-Thingy91-nodebug-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for Thingy:91"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-nodebug-*/app_signed.hex",
+              "name": "asset_tracker_v2-Thingy91-nodebug-${nextRelease.gitTag}-signed.hex",
+              "label": "App upgrade file for Thingy:91 (signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-nodebug-*/app_update.bin",
+              "name": "asset_tracker_v2-Thingy91-nodebug-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for Thingy:91"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-nodebug-*/zephyr.elf",
+              "name": "asset_tracker_v2-Thingy91-nodebug-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for Thingy:91 firmware"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-nodebug-*/merged.hex",
+              "name": "asset_tracker_v2-nRF9160DK-nodebug-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for nRF9160 DK"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-nodebug-*/app_signed.hex",
+              "name": "asset_tracker_v2-nRF9160DK-nodebug-${nextRelease.gitTag}-signed.hex",
+              "label": "Pre-build HEX file for nRF9160 DK (signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-nodebug-*/app_update.bin",
+              "name": "asset_tracker_v2-nRF9160DK-nodebug-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for nRF9160 DK"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-nodebug-*/zephyr.elf",
+              "name": "asset_tracker_v2-nRF9160DK-nodebug-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for nRF9160 DK firmware"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debug-*/merged.hex",
+              "name": "asset_tracker_v2-Thingy91-debug-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for Thingy:91 (debug)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debug-*/app_signed.hex",
+              "name": "asset_tracker_v2-Thingy91-debug-${nextRelease.gitTag}-signed.hex",
+              "label": "Pre-build HEX file for Thingy:91 (debug, signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debug-*/app_update.bin",
+              "name": "asset_tracker_v2-Thingy91-debug-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for Thingy:91 (debug)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debug-*/zephyr.elf",
+              "name": "asset_tracker_v2-Thingy91-debug-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for Thingy:91 (debug) firmware"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debug-*/merged.hex",
+              "name": "asset_tracker_v2-nRF9160DK-debug-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for nRF9160 DK (debug)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debug-*/app_signed.hex",
+              "name": "asset_tracker_v2-nRF9160DK-debug-${nextRelease.gitTag}-signed.hex",
+              "label": "Pre-build HEX file for nRF9160 DK (debug, signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debug-*/app_update.bin",
+              "name": "asset_tracker_v2-nRF9160DK-debug-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for nRF9160 DK (debug)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debug-*/zephyr.elf",
+              "name": "asset_tracker_v2-nRF9160DK-debug-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for nRF9160 DK (debug) firmware"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debugWithMemfault-*/merged.hex",
+              "name": "asset_tracker_v2-Thingy91-debugWithMemfault-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for Thingy:91 (debug with Memfault)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debugWithMemfault-*/app_signed.hex",
+              "name": "asset_tracker_v2-Thingy91-debugWithMemfault-${nextRelease.gitTag}-signed.hex",
+              "label": "Pre-build HEX file for Thingy:91 (debug with Memfault, signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debugWithMemfault-*/app_update.bin",
+              "name": "asset_tracker_v2-Thingy91-debugWithMemfault-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for Thingy:91 (debug with Memfault)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/thingy91_nrf9160_ns-debugWithMemfault-*/zephyr.elf",
+              "name": "asset_tracker_v2-Thingy91-debugWithMemfault-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for Thingy:91 (debug with Memfault) firmware"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debugWithMemfault-*/merged.hex",
+              "name": "asset_tracker_v2-nRF9160DK-debugWithMemfault-${nextRelease.gitTag}.hex",
+              "label": "Pre-build HEX file for nRF9160 DK (debug with Memfault)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debugWithMemfault-*/app_signed.hex",
+              "name": "asset_tracker_v2-nRF9160DK-debugWithMemfault-${nextRelease.gitTag}-signed.hex",
+              "label": "Pre-build HEX file for nRF9160 DK (debug with Memfault, signed)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debugWithMemfault-*/app_update.bin",
+              "name": "asset_tracker_v2-nRF9160DK-debugWithMemfault-app_upgrade-${nextRelease.gitTag}.bin",
+              "label": "App upgrade file for nRF9160 DK (debug with Memfault)"
+            },
+            {
+              "path": "/home/runner/work/asset-tracker-cloud-firmware-aws/asset-tracker-cloud-firmware-aws/nrf9160dk_nrf9160_ns-debugWithMemfault-*/zephyr.elf",
+              "name": "asset_tracker_v2-nRF9160DK-debugWithMemfault-app_upgrade-${nextRelease.gitTag}.elf",
+              "label": "Symbol file for nRF9160 DK (debug with Memfault) firmware"
+            }
+          ]
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "cloud": {
+    "repository": "https://github.com/NordicSemiconductor/asset-tracker-cloud-aws-js.git"
+  }
+}
