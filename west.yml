@@ -6,8 +6,12 @@ manifest:
   projects:
     - name: sdk-nrf
       path: nrf
-      remote: nordic
-      revision: main
+      # Symlinking to a local version doesn't play nice
+      # with west, so instead point to our fork for now
+      # TODO: Remove url and revision when this is no
+      # longer needed
+      url: https://github.com/memfault/sdk-nrf.git
+      revision: gminn/lte-metrics
       import: true
   self:
     path: firmware
