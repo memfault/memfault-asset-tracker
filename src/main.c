@@ -24,11 +24,15 @@
 #include "events/sensor_module_event.h"
 #include "events/util_module_event.h"
 #include "events/modem_module_event.h"
-
+#include "memfault/nrfconnect_port/fota.h"
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 
 LOG_MODULE_REGISTER(MODULE, CONFIG_APPLICATION_MODULE_LOG_LEVEL);
+
+#define FOTA_INITIAL_DELAY_SECONDS (60 * 3) // After 3 minutes, try first update
+#define FOTA_CHECK_TIMEOUT_SECONDS (60 * 10) // Every 10 minutes
+#define FOTA_SESSION_RETRY_COUNT 4
 
 /* Message structure. Events from other modules are converted to messages
  * in the Application Event Manager handler, and then queued up in the message queue
@@ -86,6 +90,8 @@ static bool activity;
  */
 static void data_sample_timer_handler(struct k_timer *timer);
 
+static void fota_download_callback(struct k_timer *timer);
+
 /* Application module message queue. */
 #define APP_QUEUE_ENTRY_COUNT		10
 #define APP_QUEUE_BYTE_ALIGNMENT	4
@@ -108,6 +114,8 @@ K_TIMER_DEFINE(movement_timeout_timer, data_sample_timer_handler, NULL);
  * data is sent on air.
  */
 K_TIMER_DEFINE(movement_resolution_timer, NULL, NULL);
+
+K_TIMER_DEFINE(fota_download_timer, fota_download_callback, NULL);
 
 /* Module data structure to hold information of the application module, which
  * opens up for using convenience functions available for modules.
@@ -328,6 +336,11 @@ static void passive_mode_timers_start_all(void)
 	k_timer_start(&movement_timeout_timer,
 		      K_SECONDS(app_cfg.movement_timeout),
 		      K_SECONDS(app_cfg.movement_timeout));
+
+  // Kick off update right away. TODO: Change
+  k_timer_start(&fota_download_timer,
+          K_SECONDS(FOTA_INITIAL_DELAY_SECONDS),
+          K_SECONDS(app_cfg.fota_check_timeout));
 }
 
 static void active_mode_timers_start_all(void)
@@ -419,6 +432,7 @@ static void on_state_init(struct app_msg_data *msg)
 	if (IS_EVENT(msg, data, DATA_EVT_CONFIG_INIT)) {
 		/* Keep a copy of the new configuration. */
 		app_cfg = msg->module.data.data.cfg;
+    app_cfg.fota_check_timeout = FOTA_CHECK_TIMEOUT_SECONDS;
 
 		if (app_cfg.active_mode) {
 			active_mode_timers_start_all();
@@ -490,6 +504,31 @@ static void on_sub_state_active(struct app_msg_data *msg)
 	}
 }
 
+static void fota_download_callback(struct k_timer *timer)
+{
+  ARG_UNUSED(timer);
+  // Send an event after timer expires to check for a FOTA update
+  SEND_EVENT(app, APP_FOTA_UPDATE_CHECK);
+}
+
+static void fota_event_check_handler(void)
+{
+  // Try a few times
+  int rv = 1;
+  int retry_count = FOTA_SESSION_RETRY_COUNT;
+  while(rv != 0 && retry_count > 0) {
+    rv = memfault_fota_start();
+    retry_count--;
+  }
+  if(rv != 0)
+  {
+    // Backoff, try in FOTA_INITIAL_DELAY_SECONDS
+    k_timer_start(&fota_download_timer,
+          K_SECONDS(FOTA_INITIAL_DELAY_SECONDS),
+          K_SECONDS(app_cfg.fota_check_timeout));
+  }
+}
+
 /* Message handler for all states. */
 static void on_all_events(struct app_msg_data *msg)
 {
@@ -517,6 +556,10 @@ static void on_all_events(struct app_msg_data *msg)
 	if (IS_EVENT(msg, sensor, SENSOR_EVT_MOVEMENT_IMPACT_DETECTED)) {
 		SEND_EVENT(app, APP_EVT_DATA_GET_ALL);
 	}
+
+  if (IS_EVENT(msg, app, APP_FOTA_UPDATE_CHECK)) {
+    fota_event_check_handler();
+  }
 }
 
 int main(void)

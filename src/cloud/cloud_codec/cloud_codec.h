@@ -102,6 +102,8 @@ struct cloud_data_cfg {
 	 *  in Passive mode.
 	 */
 	int movement_timeout;
+  /** Time between FOTA update requests */
+  int fota_check_timeout;
 	/** Accelerometer activity-trigger threshold value in m/s2. */
 	double accelerometer_activity_threshold;
 	/** Accelerometer inactivity-trigger threshold value in m/s2. */

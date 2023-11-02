@@ -53,6 +53,8 @@ enum app_module_event_type {
 	 */
 	APP_EVT_SHUTDOWN_READY,
 
+  APP_FOTA_UPDATE_CHECK,
+
 	/** An irrecoverable error has occurred in the application module. Error details are
 	 *  attached in the event structure.
 	 */

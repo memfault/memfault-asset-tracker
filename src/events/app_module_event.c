@@ -48,6 +48,8 @@ static char *get_evt_type_str(enum app_module_event_type type)
 		return "APP_EVT_SHUTDOWN_READY";
 	case APP_EVT_ERROR:
 		return "APP_EVT_ERROR";
+  case APP_FOTA_UPDATE_CHECK:
+    return "APP_FOTA_UPDATE_CHECK";
 	default:
 		return "Unknown event";
 	}
