@@ -263,7 +263,7 @@ static void battery_data_get(void)
 	}
 
 	memfault_metrics_heartbeat_set_unsigned(
-		MEMFAULT_METRICS_KEY(battery_soc_percent),
+		MEMFAULT_METRICS_KEY(battery_soc_pct),
 		percentage
 	);
 	uint16_t millivolts;
