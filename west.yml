@@ -13,5 +13,11 @@ manifest:
       url: https://github.com/memfault/sdk-nrf.git
       revision: gminn/lte-metrics
       import: true
+
+    - name: memfault-firmware-sdk
+      url: https://github.com/memfault/memfault-firmware-sdk
+      path: modules/lib/memfault-firmware-sdk
+      revision: "1.4.0"
+
   self:
     path: firmware
