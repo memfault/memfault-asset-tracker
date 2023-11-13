@@ -289,8 +289,6 @@ static void add_location_metrics(uint8_t satellites, uint32_t search_time,
 	if (err) {
 		LOG_ERR("Failed updating GnssSatellitesTracked metric, error: %d", err);
 	}
-
-	memfault_metrics_heartbeat_debug_trigger();
 }
 
 static void memfault_handle_event(struct debug_msg_data *msg)
