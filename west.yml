@@ -17,7 +17,7 @@ manifest:
     - name: memfault-firmware-sdk
       url: https://github.com/memfault/memfault-firmware-sdk
       path: modules/lib/memfault-firmware-sdk
-      revision: "1.4.3"
+      revision: "release/1.5.0"
 
   self:
     path: firmware
