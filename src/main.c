@@ -89,12 +89,21 @@ static bool activity;
  */
 static void data_sample_timer_handler(struct k_timer *timer);
 
+#if defined(CONFIG_MEMFAULT_FOTA)
+static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer);
+#endif
+
 /* Application module message queue. */
 #define APP_QUEUE_ENTRY_COUNT		10
 #define APP_QUEUE_BYTE_ALIGNMENT	4
 
 /* Data fetching timeouts */
 #define DATA_FETCH_TIMEOUT_DEFAULT 2
+
+#if defined(CONFIG_MEMFAULT_FOTA)
+/* FOTA timeouts */
+#define FOTA_CHECK_TIMEOUT_HOURS 12
+#endif
 
 K_MSGQ_DEFINE(msgq_app, sizeof(struct app_msg_data), APP_QUEUE_ENTRY_COUNT,
 	      APP_QUEUE_BYTE_ALIGNMENT);
@@ -111,6 +120,11 @@ K_TIMER_DEFINE(movement_timeout_timer, data_sample_timer_handler, NULL);
  * data is sent on air.
  */
 K_TIMER_DEFINE(movement_resolution_timer, NULL, NULL);
+
+#if defined(CONFIG_MEMFAULT_FOTA)
+/* FOTA timer used to trigger an FOTA update if a payload is available. */
+K_TIMER_DEFINE(s_memfault_fota_timer, prv_memfault_fota_timer_expiry_handler, NULL);
+#endif
 
 /* Module data structure to hold information of the application module, which
  * opens up for using convenience functions available for modules.
@@ -493,10 +507,12 @@ static void on_sub_state_active(struct app_msg_data *msg)
 	}
 }
 
-/* always check for a new FOTA on first boot and then every timer period */
+#if defined(CONFIG_MEMFAULT_FOTA)
+/* Always check for a new FOTA on first boot and then every timer period */
 static bool s_run_fota_check_upon_lte_connect = true;
 
-static void prv_memfault_fota_work_handler(struct k_work *work) {
+static void prv_memfault_fota_work_handler(struct k_work *work)
+{
 	int rv = memfault_fota_start();
 	if (rv < 0) {
 		/* we may have just not been connected, try again on next connect */
@@ -511,55 +527,59 @@ static void prv_run_memfault_fota_check(void) {
 	k_work_schedule(&s_memfault_fota_work, K_SECONDS(5));
 }
 
-void memfault_fota_download_callback(const struct fota_download_evt *evt) {
+void memfault_fota_download_callback(const struct fota_download_evt *evt)
+{
 	switch (evt->id) {
 	case FOTA_DOWNLOAD_EVT_FINISHED:
 		MEMFAULT_LOG_INFO("OTA Complete, resetting to install update!");
 		memfault_platform_reboot();
 		break;
 	case FOTA_DOWNLOAD_EVT_ERROR:
-	  /*
-	   * FIXME: When multiple threads are send/read'ing from the modem
-	   * at the same time, we get intermittent corruption issues. We should
-	   * really figure out what is wrong here but for now we just keep retrying.
-	   *
-	   * Example error logs:
-	   *
-	   * [00:04:45.544,891] <wrn> location: GNSS timed out possibly due to too short GNSS time windows
-	   * [00:04:45.557,037] <inf> app_event_manager: LOCATION_MODULE_EVT_CLOUD_LOCATION_DATA_READY
-	   * [00:04:45.557,769] <inf> app_event_manager: DATA_EVT_DATA_READY
-	   * [00:04:45.562,713] <inf> app_event_manager: DATA_EVT_CLOUD_LOCATION_DATA_SEND
-	   * [00:04:45.580,718] <inf> app_event_manager: DATA_EVT_DATA_SEND_BATCH
-	   * [00:04:45.581,604] <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
-	   * [00:04:45.581,909] <inf> app_event_manager: CLOUD_EVT_CLOUD_LOCATION_UNKNOWN
-	   * [00:04:45.582,672] <inf> app_event_manager: LOCATION_MODULE_EVT_INACTIVE
-	   * [00:04:45.583,923] <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
-	   * [00:04:46.846,618] <inf> download_client: Downloaded 346112/424124 bytes (81%)
-	   * [00:04:47.373,565] <err> download_client: Unexpected HTTP response: 403 forbidden
-	   * [00:04:47.373,596] <err> fota_download: Download client error
-	   * [00:04:47.373,596] <err> fota_download: Download client error
-	   * [00:04:47.373,596] <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
-	   * [00:04:47.373,657] <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
-	   * [00:04:47.375,183] <err> FOTA failed -- trying again ...
-	   */
+		/*
+		 * FIXME: When multiple threads are send/read'ing from the modem
+		 * at the same time, we get intermittent corruption issues. We should
+		 * really figure out what is wrong here but for now we just keep retrying.
+		 *
+		 * Example error logs:
+		 *
+		 * <wrn> location: GNSS timed out possibly due to too short GNSS time windows
+		 * <inf> app_event_manager: LOCATION_MODULE_EVT_CLOUD_LOCATION_DATA_READY
+		 * <inf> app_event_manager: DATA_EVT_DATA_READY
+		 * <inf> app_event_manager: DATA_EVT_CLOUD_LOCATION_DATA_SEND
+		 * <inf> app_event_manager: DATA_EVT_DATA_SEND_BATCH
+		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
+		 * <inf> app_event_manager: CLOUD_EVT_CLOUD_LOCATION_UNKNOWN
+		 * <inf> app_event_manager: LOCATION_MODULE_EVT_INACTIVE
+		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
+		 * <inf> download_client: Downloaded 346112/424124 bytes (81%)
+		 * <err> download_client: Unexpected HTTP response: 403 forbidden
+		 * <err> fota_download: Download client error
+		 * <err> fota_download: Download client error
+		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
+		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
+		 * <err> FOTA failed -- trying again ...
+		 */
 		MEMFAULT_LOG_ERROR("FOTA failed -- trying again ...");
 		prv_run_memfault_fota_check();
 		break;
 	default:
 		break;
-  }
+	}
 }
 
-static void prv_memfault_fota_timer_expiry_handler(struct k_timer *dummy) {
+static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer)
+{
+	ARG_UNUSED(timer);
 	prv_run_memfault_fota_check();
 }
 
-K_TIMER_DEFINE(s_memfault_fota_timer, prv_memfault_fota_timer_expiry_handler, NULL);
-
-static void prv_memfault_fota_timer_start(void) {
-	/* Check and see if new FOTA is available every 12 hours */
-	k_timer_start(&s_memfault_fota_timer, K_HOURS(12), K_HOURS(12));
+static void prv_memfault_fota_timer_start(void)
+{
+	/* Periodically check if new FOTA is available */
+	k_timer_start(&s_memfault_fota_timer, K_HOURS(FOTA_CHECK_TIMEOUT_HOURS),
+		      K_HOURS(FOTA_CHECK_TIMEOUT_HOURS));
 }
+#endif /* CONFIG_MEMFAULT_FOTA */
 
 /* Message handler for all states. */
 static void on_all_events(struct app_msg_data *msg)
@@ -589,12 +609,14 @@ static void on_all_events(struct app_msg_data *msg)
 		SEND_EVENT(app, APP_EVT_DATA_GET_ALL);
 	}
 
+#if defined(CONFIG_MEMFAULT_FOTA)
 	if (IS_EVENT(msg, modem, MODEM_EVT_LTE_CONNECTED)) {
 		if (s_run_fota_check_upon_lte_connect) {
 			prv_run_memfault_fota_check();
 			s_run_fota_check_upon_lte_connect = false;
 		}
 	}
+#endif /* CONFIG_MEMFAULT_FOTA */
 }
 
 int main(void)
@@ -625,7 +647,10 @@ int main(void)
 		LOG_ERR("Failed starting module, error: %d", err);
 		SEND_ERROR(app, APP_EVT_ERROR, err);
 	}
+
+#if defined(CONFIG_MEMFAULT_FOTA)
 	prv_memfault_fota_timer_start();
+#endif
 
 	while (true) {
 		module_get_next_msg(&self, &msg);
