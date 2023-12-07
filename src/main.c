@@ -25,6 +25,9 @@
 #include "events/util_module_event.h"
 #include "events/modem_module_event.h"
 
+#include "memfault/components.h"
+#include "memfault/nrfconnect_port/fota.h"
+
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
 
@@ -490,6 +493,85 @@ static void on_sub_state_active(struct app_msg_data *msg)
 	}
 }
 
+#if defined(CONFIG_MEMFAULT_FOTA)
+/* FOTA timeout */
+#define FOTA_CHECK_TIMEOUT_HOURS     12
+#define FOTA_WORK_ITEM_DELAY_SECONDS 5
+
+/* Always check for a new FOTA on first boot and then every timer period */
+static bool s_run_fota_check_upon_lte_connect = true;
+
+static void prv_memfault_fota_work_handler(struct k_work *work)
+{
+	int rv = memfault_fota_start();
+	if (rv < 0) {
+		/* we may have just not been connected, try again on next connect */
+		s_run_fota_check_upon_lte_connect = true;
+	} else if (rv == 0) {
+		MEMFAULT_LOG_INFO("FOTA up to date");
+	}
+}
+K_WORK_DELAYABLE_DEFINE(s_memfault_fota_work, prv_memfault_fota_work_handler);
+
+static void prv_run_memfault_fota_check(void) {
+	k_work_schedule(&s_memfault_fota_work, K_SECONDS(FOTA_WORK_ITEM_DELAY_SECONDS));
+}
+
+void memfault_fota_download_callback(const struct fota_download_evt *evt)
+{
+	switch (evt->id) {
+	case FOTA_DOWNLOAD_EVT_FINISHED:
+		MEMFAULT_LOG_INFO("OTA Complete, resetting to install update!");
+		memfault_platform_reboot();
+		break;
+	case FOTA_DOWNLOAD_EVT_ERROR:
+		/*
+		 * FIXME: When multiple threads are send/read'ing from the modem
+		 * at the same time, we get intermittent corruption issues. We should
+		 * really figure out what is wrong here but for now we just keep retrying.
+		 *
+		 * Example error logs:
+		 *
+		 * <wrn> location: GNSS timed out possibly due to too short GNSS time windows
+		 * <inf> app_event_manager: LOCATION_MODULE_EVT_CLOUD_LOCATION_DATA_READY
+		 * <inf> app_event_manager: DATA_EVT_DATA_READY
+		 * <inf> app_event_manager: DATA_EVT_CLOUD_LOCATION_DATA_SEND
+		 * <inf> app_event_manager: DATA_EVT_DATA_SEND_BATCH
+		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
+		 * <inf> app_event_manager: CLOUD_EVT_CLOUD_LOCATION_UNKNOWN
+		 * <inf> app_event_manager: LOCATION_MODULE_EVT_INACTIVE
+		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
+		 * <inf> download_client: Downloaded 346112/424124 bytes (81%)
+		 * <err> download_client: Unexpected HTTP response: 403 forbidden
+		 * <err> fota_download: Download client error
+		 * <err> fota_download: Download client error
+		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
+		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
+		 * <err> FOTA failed -- trying again ...
+		 */
+		MEMFAULT_LOG_ERROR("FOTA failed -- trying again ...");
+		prv_run_memfault_fota_check();
+		break;
+	default:
+		break;
+	}
+}
+
+static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer)
+{
+	ARG_UNUSED(timer);
+	prv_run_memfault_fota_check();
+}
+K_TIMER_DEFINE(s_memfault_fota_timer, prv_memfault_fota_timer_expiry_handler, NULL);
+
+static void prv_memfault_fota_timer_start(void)
+{
+	/* Periodically check if new FOTA is available */
+	k_timer_start(&s_memfault_fota_timer, K_HOURS(FOTA_CHECK_TIMEOUT_HOURS),
+		      K_HOURS(FOTA_CHECK_TIMEOUT_HOURS));
+}
+#endif /* CONFIG_MEMFAULT_FOTA */
+
 /* Message handler for all states. */
 static void on_all_events(struct app_msg_data *msg)
 {
@@ -517,6 +599,15 @@ static void on_all_events(struct app_msg_data *msg)
 	if (IS_EVENT(msg, sensor, SENSOR_EVT_MOVEMENT_IMPACT_DETECTED)) {
 		SEND_EVENT(app, APP_EVT_DATA_GET_ALL);
 	}
+
+#if defined(CONFIG_MEMFAULT_FOTA)
+	if (IS_EVENT(msg, modem, MODEM_EVT_LTE_CONNECTED)) {
+		if (s_run_fota_check_upon_lte_connect) {
+			prv_run_memfault_fota_check();
+			s_run_fota_check_upon_lte_connect = false;
+		}
+	}
+#endif /* CONFIG_MEMFAULT_FOTA */
 }
 
 int main(void)
@@ -547,6 +638,10 @@ int main(void)
 		LOG_ERR("Failed starting module, error: %d", err);
 		SEND_ERROR(app, APP_EVT_ERROR, err);
 	}
+
+#if defined(CONFIG_MEMFAULT_FOTA)
+	prv_memfault_fota_timer_start();
+#endif
 
 	while (true) {
 		module_get_next_msg(&self, &msg);
