@@ -89,21 +89,12 @@ static bool activity;
  */
 static void data_sample_timer_handler(struct k_timer *timer);
 
-#if defined(CONFIG_MEMFAULT_FOTA)
-static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer);
-#endif
-
 /* Application module message queue. */
 #define APP_QUEUE_ENTRY_COUNT		10
 #define APP_QUEUE_BYTE_ALIGNMENT	4
 
 /* Data fetching timeouts */
 #define DATA_FETCH_TIMEOUT_DEFAULT 2
-
-#if defined(CONFIG_MEMFAULT_FOTA)
-/* FOTA timeouts */
-#define FOTA_CHECK_TIMEOUT_HOURS 12
-#endif
 
 K_MSGQ_DEFINE(msgq_app, sizeof(struct app_msg_data), APP_QUEUE_ENTRY_COUNT,
 	      APP_QUEUE_BYTE_ALIGNMENT);
@@ -120,11 +111,6 @@ K_TIMER_DEFINE(movement_timeout_timer, data_sample_timer_handler, NULL);
  * data is sent on air.
  */
 K_TIMER_DEFINE(movement_resolution_timer, NULL, NULL);
-
-#if defined(CONFIG_MEMFAULT_FOTA)
-/* FOTA timer used to trigger an FOTA update if a payload is available. */
-K_TIMER_DEFINE(s_memfault_fota_timer, prv_memfault_fota_timer_expiry_handler, NULL);
-#endif
 
 /* Module data structure to hold information of the application module, which
  * opens up for using convenience functions available for modules.
@@ -508,6 +494,10 @@ static void on_sub_state_active(struct app_msg_data *msg)
 }
 
 #if defined(CONFIG_MEMFAULT_FOTA)
+/* FOTA timeout */
+#define FOTA_CHECK_TIMEOUT_HOURS     12
+#define FOTA_WORK_ITEM_DELAY_SECONDS 5
+
 /* Always check for a new FOTA on first boot and then every timer period */
 static bool s_run_fota_check_upon_lte_connect = true;
 
@@ -524,7 +514,7 @@ static void prv_memfault_fota_work_handler(struct k_work *work)
 K_WORK_DELAYABLE_DEFINE(s_memfault_fota_work, prv_memfault_fota_work_handler);
 
 static void prv_run_memfault_fota_check(void) {
-	k_work_schedule(&s_memfault_fota_work, K_SECONDS(5));
+	k_work_schedule(&s_memfault_fota_work, K_SECONDS(FOTA_WORK_ITEM_DELAY_SECONDS));
 }
 
 void memfault_fota_download_callback(const struct fota_download_evt *evt)
@@ -572,6 +562,7 @@ static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer)
 	ARG_UNUSED(timer);
 	prv_run_memfault_fota_check();
 }
+K_TIMER_DEFINE(s_memfault_fota_timer, prv_memfault_fota_timer_expiry_handler, NULL);
 
 static void prv_memfault_fota_timer_start(void)
 {
