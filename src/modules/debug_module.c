@@ -76,7 +76,11 @@ entry:
 	 * Memfault SDKs internal HTTP transport is used.
 	 */
 #if !defined(CONFIG_DEBUG_MODULE_MEMFAULT_USE_EXTERNAL_TRANSPORT)
-		memfault_zephyr_port_post_data();
+	int rv = memfault_zephyr_port_post_data();
+	if (rv != 0) {
+		LOG_ERR("memfault_zephyr_port_post_data, error: %d", rv);
+	}
+	goto entry;
 #else
 	uint8_t data[CONFIG_DEBUG_MODULE_MEMFAULT_CHUNK_SIZE_MAX];
 	size_t len = sizeof(data);
@@ -89,6 +93,7 @@ entry:
 		message = k_malloc(len);
 		if (message == NULL) {
 			LOG_ERR("Failed to allocate memory for Memfault data");
+			memfault_metrics_connectivity_record_memfault_sync_failure();
 			goto entry;
 		}
 
@@ -106,6 +111,10 @@ entry:
 
 		len = sizeof(data);
 	}
+
+	// Finished submitting Memfault chunks to the MQTT QoS handler, count this
+	// as a Memfault sync success
+	memfault_metrics_connectivity_record_memfault_sync_success();
 #endif
 	goto entry;
 }
