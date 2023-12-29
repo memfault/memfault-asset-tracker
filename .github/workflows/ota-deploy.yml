@@ -1,0 +1,91 @@
+name: WeFault Fleet Build & OTA Deploy
+
+env:
+  DEFAULT_PYTHON: 3.8
+  MEMFAULT_PROJECT: thingy91-fleet
+  MEMFAULT_ORG: memfault
+  HARDWARE_VERSION: thingy91
+  SOFTWARE_VERSION: "$(date --iso-8601 | tr - .).${GITHUB_RUN_ID}"
+  SOFTWARE_TYPE: nrf91ns-fw
+  COHORT: auto-ota
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  ota-deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: memfault/nrf-connect-sdk:2024-01-05
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+
+      - name: Install Zephyr SDK as CMake package
+        run: |
+          ${ZEPHYR_SDK_INSTALL_DIR}/setup.sh -c
+
+      - name: Build OTA payload
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ../
+          python -m venv venv
+          . venv/bin/activate
+          pip install -U pip==21.1
+          pip install west
+          pip install memfault-cli
+          west init -l memfault-asset-tracker
+          west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
+          pip install -r zephyr/scripts/requirements.txt
+          pip install -r nrf/scripts/requirements-build.txt
+          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
+          -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"${{ secrets.THINGY91_OTA_PROJECT_KEY }}\" \
+          -DOVERLAY_CONFIG=overlay-memfault.conf \
+          -DCONFIG_BUILD_OUTPUT_META=n \
+          -Dmcuboot_CONFIG_BUILD_OUTPUT_META=n \
+          -DCONFIG_NEWLIB_LIBC_FLOAT_PRINTF=y \
+          -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
+          -DCONFIG_MEMFAULT_NCS_FW_VERSION=\"${{ env.SOFTWARE_VERSION }}\"
+
+          rm -rf ~/zephyr-thingy91-path-cache
+          cp -r ${PWD} ~/zephyr-thingy91-path-cache
+
+      - name: Update Zephyr Project Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/zephyr-thingy91-path-cache
+          key: zephyr-thingy91-{{ checksum $GITHUB_WORKSPACE/west.yml }}
+
+      - name: Upload payload and deploy release
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ../
+          . venv/bin/activate
+          memfault \
+            --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \
+            --org ${{ env.MEMFAULT_ORG }} \
+            --project ${{ env.MEMFAULT_PROJECT }} \
+            upload-mcu-symbols build/zephyr/zephyr.elf
+
+          memfault \
+            --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \
+            --org ${{ env.MEMFAULT_ORG }} \
+            --project ${{ env.MEMFAULT_PROJECT }} upload-ota-payload \
+            --hardware-version ${{ env.HARDWARE_VERSION }} \
+            --software-type ${{ env.SOFTWARE_TYPE }} \
+            --software-version ${{ env.SOFTWARE_VERSION }} \
+            build/zephyr/app_update.bin
+
+          memfault \
+            --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \
+            --org ${{ env.MEMFAULT_ORG }} \
+            --project ${{ env.MEMFAULT_PROJECT }} deploy-release \
+            --release-version ${{ env.SOFTWARE_VERSION }} \
+            --cohort ${{ env.COHORT }}
