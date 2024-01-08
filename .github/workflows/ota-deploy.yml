@@ -1,7 +1,10 @@
 name: WeFault Fleet Build & OTA Deploy
+run-name: ${{ inputs.run_name }}
 
 env:
   DEFAULT_PYTHON: 3.8
+
+  # These parameters are used for OTA payload upload and release deployment
   MEMFAULT_PROJECT: thingy91-fleet
   MEMFAULT_ORG: memfault
   HARDWARE_VERSION: thingy91
@@ -12,11 +15,19 @@ env:
 on:
   push:
     branches:
-      - master
+      - main
+  workflow_dispatch:
+    inputs:
+      run_name:
+        description: 'Name of run to identify it from other runs'
+        required: false
+        type: string
 
 jobs:
   ota-deploy:
     runs-on: ubuntu-latest
+
+    # Image generated from: https://github.com/memfault/memfault-port-playground/tree/master/docker/nrf-connect-sdk
     container:
       image: memfault/nrf-connect-sdk:2024-01-05
     steps:
@@ -39,8 +50,7 @@ jobs:
           python -m venv venv
           . venv/bin/activate
           pip install -U pip==21.1
-          pip install west
-          pip install memfault-cli
+          pip install west==1.2.0 memfault-cli==1.0.4
           west init -l memfault-asset-tracker
           west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
           pip install -r zephyr/scripts/requirements.txt
