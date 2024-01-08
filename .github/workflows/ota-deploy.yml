@@ -58,9 +58,6 @@ jobs:
           west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
           -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"${{ secrets.THINGY91_OTA_PROJECT_KEY }}\" \
           -DOVERLAY_CONFIG=overlay-memfault.conf \
-          -DCONFIG_BUILD_OUTPUT_META=n \
-          -Dmcuboot_CONFIG_BUILD_OUTPUT_META=n \
-          -DCONFIG_NEWLIB_LIBC_FLOAT_PRINTF=y \
           -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
           -DCONFIG_MEMFAULT_NCS_FW_VERSION=\"${{ env.SOFTWARE_VERSION }}\"
 
