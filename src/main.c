@@ -525,32 +525,7 @@ void memfault_fota_download_callback(const struct fota_download_evt *evt)
 		memfault_platform_reboot();
 		break;
 	case FOTA_DOWNLOAD_EVT_ERROR:
-		/*
-		 * FIXME: When multiple threads are send/read'ing from the modem
-		 * at the same time, we get intermittent corruption issues. We should
-		 * really figure out what is wrong here but for now we just keep retrying.
-		 *
-		 * Example error logs:
-		 *
-		 * <wrn> location: GNSS timed out possibly due to too short GNSS time windows
-		 * <inf> app_event_manager: LOCATION_MODULE_EVT_CLOUD_LOCATION_DATA_READY
-		 * <inf> app_event_manager: DATA_EVT_DATA_READY
-		 * <inf> app_event_manager: DATA_EVT_CLOUD_LOCATION_DATA_SEND
-		 * <inf> app_event_manager: DATA_EVT_DATA_SEND_BATCH
-		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
-		 * <inf> app_event_manager: CLOUD_EVT_CLOUD_LOCATION_UNKNOWN
-		 * <inf> app_event_manager: LOCATION_MODULE_EVT_INACTIVE
-		 * <inf> app_event_manager: CLOUD_EVT_DATA_SEND_QOS
-		 * <inf> download_client: Downloaded 346112/424124 bytes (81%)
-		 * <err> download_client: Unexpected HTTP response: 403 forbidden
-		 * <err> fota_download: Download client error
-		 * <err> fota_download: Download client error
-		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
-		 * <inf> dfu_target_mcuboot: MCUBoot image upgrade aborted.
-		 * <err> FOTA failed -- trying again ...
-		 */
-		MEMFAULT_LOG_ERROR("FOTA failed -- trying again ...");
-		prv_run_memfault_fota_check();
+		MEMFAULT_LOG_ERROR("FOTA failed");
 		break;
 	default:
 		break;

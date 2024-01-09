@@ -1,0 +1,63 @@
+name: Build
+run-name: ${{ inputs.run_name }}
+
+env:
+  DEFAULT_PYTHON: 3.8
+on:
+  pull_request: null
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      run_name:
+        description: 'Name of run to identify it from other runs'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Image generated from: https://github.com/memfault/memfault-port-playground/tree/master/docker/nrf-connect-sdk
+    container:
+      image: memfault/nrf-connect-sdk:2024-01-05
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ env.DEFAULT_PYTHON }}
+        id: python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON }}
+
+      - name: Install Zephyr SDK as CMake package
+        run: |
+          ${ZEPHYR_SDK_INSTALL_DIR}/setup.sh -c
+
+      - name: Build app
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ../
+          python -m venv venv
+          . venv/bin/activate
+          pip install -U pip==21.1
+          pip install west==1.2.0 memfault-cli==1.0.4
+          west init -l memfault-asset-tracker
+          west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
+          pip install -r zephyr/scripts/requirements.txt
+          pip install -r nrf/scripts/requirements-build.txt
+          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
+          -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"${{ secrets.THINGY91_OTA_PROJECT_KEY }}\" \
+          -DOVERLAY_CONFIG=overlay-memfault.conf \
+          -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
+          -DCONFIG_MEMFAULT_NCS_FW_VERSION=\"${{ env.SOFTWARE_VERSION }}\"
+
+          rm -rf ~/zephyr-thingy91-path-cache
+          cp -r ${PWD} ~/zephyr-thingy91-path-cache
+
+      - name: Update Zephyr Project Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/zephyr-thingy91-path-cache
+          key: zephyr-thingy91-{{ checksum $GITHUB_WORKSPACE/west.yml }}
