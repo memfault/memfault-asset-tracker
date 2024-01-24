@@ -1,0 +1,1 @@
+#include "../../../boards/thingy91_nrf9160_ns_memfault.overlay"

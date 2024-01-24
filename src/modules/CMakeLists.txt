@@ -15,3 +15,6 @@ target_sources_ifdef(CONFIG_DATA_MODULE app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/
 target_sources_ifdef(CONFIG_UTIL_MODULE app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/util_module.c)
 target_sources_ifdef(CONFIG_LED_CONTROL app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/led_module.c)
 target_sources_ifdef(CONFIG_DEBUG_MODULE app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/debug_module.c)
+
+zephyr_linker_sources_ifndef(CONFIG_MEMFAULT_DEFAULT_NOINIT_SECTION NOINIT custom-noinit-coredump.ld)
+zephyr_linker_sources_ifndef(CONFIG_MEMFAULT_DEFAULT_NOINIT_SECTION RAM_SECTIONS custom-noinit-reboot.ld)
