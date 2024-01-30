@@ -26,18 +26,6 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_LOCATION_MODULE_LOG_LEVEL);
 
-BUILD_ASSERT(CONFIG_AT_MONITOR_HEAP_SIZE >= 1024,
-	    "CONFIG_AT_MONITOR_HEAP_SIZE must be >= 1024 to fit neighbor cell measurements "
-	    "and other notifications at the same time");
-
-/* Use a timeout of 90 seconds for GNSS search. */
-#define DATA_FETCH_TIMEOUT_GNSS_SEARCH 90
-
-/* Use a timeout of 11 seconds to accommodate for neighbour cell measurements
- * that can take up to 10.24 seconds.
- */
-#define DATA_FETCH_TIMEOUT_NEIGHBORHOOD_SEARCH 11
-
 struct location_msg_data {
 	union {
 		struct app_module_event app;
@@ -79,6 +67,13 @@ static struct module_stats {
 	/* Number of satellites tracked at the time of a GNSS fix or a timeout. */
 	uint8_t satellites_tracked;
 } stats;
+
+/* Indicates whether cloud location request is pending towards cloud service, that is,
+ * LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST has been received but not responded yet.
+ * This is specifically needed when cloud connection doesn't exist and there is a
+ * new sampling request. We can then cancel previous location request and do a new one.
+ */
+static bool cloud_location_request_pending;
 
 static struct module_data self = {
 	.name = "location",
@@ -245,12 +240,6 @@ static void search_start(void)
 	int methods_count = 0;
 	struct location_method_config methods_updated[CONFIG_LOCATION_METHODS_LIST_SIZE] = { 0 };
 
-	if (copy_cfg.no_data.neighbor_cell && copy_cfg.no_data.gnss && copy_cfg.no_data.wifi) {
-		SEND_EVENT(location, LOCATION_MODULE_EVT_DATA_NOT_READY);
-		LOG_ERR("All GNSS, cellular and Wi-Fi are configured off");
-		return;
-	}
-
 	/* Set default location configuration configured at compile time */
 	location_config_defaults_set(&config, 0, NULL);
 
@@ -275,6 +264,12 @@ static void search_start(void)
 			}
 		}
 
+		if (methods_count == 0) {
+			SEND_EVENT(location, LOCATION_MODULE_EVT_DATA_NOT_READY);
+			LOG_INF("All location methods are disabled at run-time");
+			return;
+		}
+
 		config.methods_count = methods_count;
 		memcpy(config.methods,
 		       methods_updated,
@@ -296,6 +291,7 @@ static void search_start(void)
 
 static void inactive_send(void)
 {
+	cloud_location_request_pending = false;
 	SEND_EVENT(location, LOCATION_MODULE_EVT_INACTIVE);
 }
 
@@ -501,6 +497,7 @@ void location_event_handler(const struct location_event_data *event_data)
 	case LOCATION_EVT_CLOUD_LOCATION_EXT_REQUEST:
 		LOG_DBG("Getting cloud location request");
 		send_cloud_location_update(&event_data->cloud_location_request);
+		cloud_location_request_pending = true;
 		break;
 #endif
 
@@ -574,6 +571,16 @@ static void on_state_running_location_search(struct location_msg_data *msg)
 
 	if (IS_EVENT(msg, app, APP_EVT_DATA_GET)) {
 		if (!location_data_requested(msg->module.app.data_list, msg->module.app.count)) {
+			return;
+		}
+
+		/* If cloud location request is pending data and cloud modules,
+		 * we'll cancel current location request and start a new one
+		 */
+		if (cloud_location_request_pending) {
+			location_request_cancel();
+			cloud_location_request_pending = false;
+			search_start();
 			return;
 		}
 
