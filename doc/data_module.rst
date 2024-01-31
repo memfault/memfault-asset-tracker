@@ -10,9 +10,6 @@ Data module
 The data module gathers data that has been sampled by other modules in the system and stores it into ring buffers.
 It keeps track of data requested by the :ref:`asset_tracker_v2_app_module` and decides when data is sent to the cloud.
 
-.. note::
-   The data module will undergo substantial refactoring soon. Hence, some of its features are not currently documented.
-
 Features
 ********
 
@@ -125,6 +122,12 @@ CONFIG_DATA_SAMPLE_GNSS_DEFAULT
 
 CONFIG_DATA_SAMPLE_NEIGHBOR_CELLS_DEFAULT
    This configuration includes neighbor cell measurements during sampling.
+   Enabled by default.
+
+.. _CONFIG_DATA_SAMPLE_WIFI_DEFAULT:
+
+CONFIG_DATA_SAMPLE_WIFI_DEFAULT
+   This configuration includes Wi-Fi APs during sampling.
    Enabled by default.
 
 Other options:
