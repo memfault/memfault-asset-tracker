@@ -11,7 +11,7 @@ manifest:
       # TODO: Remove url and revision when this is no
       # longer needed
       url: https://github.com/memfault/sdk-nrf.git
-      revision: gminn/v2.5.99-lte-metrics
+      revision: dogfood
       import: true
 
     - name: memfault-firmware-sdk
