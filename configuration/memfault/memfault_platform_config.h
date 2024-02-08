@@ -10,4 +10,11 @@
  /* Prepare captured metric data for upload to Memfault cloud every configured interval. */
 #define MEMFAULT_METRICS_HEARTBEAT_INTERVAL_SECS CONFIG_DEBUG_MODULE_MEMFAULT_HEARTBEAT_INTERVAL_SEC
 #define MEMFAULT_DATA_EXPORT_CHUNK_MAX_LEN CONFIG_DEBUG_MODULE_MEMFAULT_CHUNK_SIZE_MAX
+
+ /* Enable battery metrics */
+#define MEMFAULT_METRICS_BATTERY_ENABLE 1
+
+ /* Enable connection time metric */
+#define MEMFAULT_METRICS_CONNECTIVITY_CONNECTED_TIME 1
+
 #endif /* defined(CONFIG_DEBUG_MODULE) */
