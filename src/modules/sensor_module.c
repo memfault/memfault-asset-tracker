@@ -25,10 +25,6 @@
 #include "events/sensor_module_event.h"
 #include "events/util_module_event.h"
 
-#if defined(CONFIG_MEMFAULT)
-#include "memfault/components.h"
-#endif
-
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(sensor_module, CONFIG_SENSOR_MODULE_LOG_LEVEL);
 
@@ -263,23 +259,6 @@ static void battery_data_get(void)
 		LOG_ERR("Failed to get battery level: %d", err);
 		return;
 	}
-
-#if defined(CONFIG_MEMFAULT)
-	memfault_metrics_heartbeat_set_unsigned(
-		MEMFAULT_METRICS_KEY(battery_soc_pct),
-		percentage
-	);
-	uint16_t millivolts;
-	err = adp536x_fg_volts(&millivolts);
-	if (err) {
-		LOG_ERR("Failed to get battery voltage: %d", err);
-		return;
-	}
-	memfault_metrics_heartbeat_set_unsigned(
-		MEMFAULT_METRICS_KEY(battery_voltage_mv),
-		millivolts
-	);
-#endif
 
 	sensor_module_event = new_sensor_module_event();
 
