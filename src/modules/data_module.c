@@ -26,6 +26,10 @@
 #include "events/ui_module_event.h"
 #include "events/util_module_event.h"
 
+#if defined(CONFIG_MEMFAULT_DATETIME_TIMESTAMP_EVENT_CALLBACK)
+#include "memfault/ports/ncs/date_time_callback.h"
+#endif
+
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(MODULE, CONFIG_DATA_MODULE_LOG_LEVEL);
 
@@ -369,6 +373,11 @@ static int config_settings_handler(const char *key, size_t len,
 
 static void date_time_event_handler(const struct date_time_evt *evt)
 {
+#if defined(CONFIG_MEMFAULT_DATETIME_TIMESTAMP_EVENT_CALLBACK)
+#include "memfault/ports/ncs/date_time_callback.h"
+	memfault_zephyr_date_time_evt_handler(evt);
+#endif
+
 	switch (evt->type) {
 	case DATE_TIME_OBTAINED_MODEM:
 		/* Fall through. */
