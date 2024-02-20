@@ -6,10 +6,10 @@ manifest:
   projects:
     - name: sdk-nrf
       path: nrf
-      # Symlinking to a local version doesn't play nice
-      # with west, so instead point to our fork for now
-      # TODO: Remove url and revision when this is no
-      # longer needed
+      # We point to a branch on the Memfault fork of
+      # NCS, which may have beta NCS changes for
+      # Memfault currently under testing, but will
+      # otherwise be a mirror of upstream NCS main.
       url: https://github.com/memfault/sdk-nrf.git
       revision: dogfood
       import: true
