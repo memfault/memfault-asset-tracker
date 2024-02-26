@@ -68,4 +68,4 @@ west flash --erase
 ## Deploying OTAs
 
 This app also has an example of how to auto-deploy releases with Memfault.
-See [`ota-deploy.yml`](.github/workflows/ota-deploy.yaml).
+See [`ota-deploy.yaml`](.github/workflows/ota-deploy.yaml).
