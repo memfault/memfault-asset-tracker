@@ -1,4 +1,4 @@
-name: WeFault Fleet Build & OTA Deploy
+name: Build & OTA Deploy
 run-name: ${{ inputs.run_name }}
 
 env:
