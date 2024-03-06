@@ -13,11 +13,9 @@ manifest:
       url: https://github.com/memfault/sdk-nrf.git
       revision: dogfood
       import: true
-
     - name: memfault-firmware-sdk
       url: https://github.com/memfault/memfault-firmware-sdk
       path: modules/lib/memfault-firmware-sdk
-      revision: "1.6.1"
-
+      revision: ""
   self:
     path: firmware
