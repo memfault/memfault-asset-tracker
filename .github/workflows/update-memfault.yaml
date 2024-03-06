@@ -1,0 +1,65 @@
+name: Update Memfault
+run-name: ${{ inputs.run_name }}
+
+env:
+  DEFAULT_PYTHON: 3.8
+
+on:
+  schedule:
+    - cron: "8 0 * * *"
+  workflow_dispatch:
+    inputs:
+      run_name:
+        description: 'Name of run to identify it from other runs'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install needed packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y -qq \
+          curl \
+          ripgrep
+
+      - name: Check for outdated SDK version
+        run: |
+          LATEST_SDK_VER=$(rg 'VERSION:\s(\d+\.\d+\.\d+)' \
+            <(curl -sSL 'https://raw.githubusercontent.com/memfault/memfault-firmware-sdk/master/VERSION') -r '$1' --no-filename --no-line-number)
+          REPO_SDK_VER=$(yq '.manifest.projects[1].revision' west.yml)
+          echo "LATEST_SDK_VER=$LATEST_SDK_VER" >> $GITHUB_ENV
+          echo "REPO_SDK_VER=$REPO_SDK_VER" >> $GITHUB_ENV
+
+      - name: Update west.yml
+        if: ${{ env.REPO_SDK_VER != env.LATEST_SDK_VER }}
+        run: |
+          yq -i '.manifest.projects[1].revision = "${{ env.LATEST_SDK_VER }}"' west.yml
+          git status
+
+      - name: Create Pull Request
+        if: ${{ env.REPO_SDK_VER != env.LATEST_SDK_VER }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_PAT }}
+          commit-message: |
+            chore(memfault): update memfault sdk
+
+            ### Summary
+
+            Update the Memfault SDK
+
+            ### Test Plan
+
+            CI
+          title: |
+            chore(memfault): pull in latest memfault sdk
+          base: main
+          branch: github-actions/update-to-memfault-v${{ env.LATEST_SDK_VER }}
+          delete-branch: true
+          team-reviewers: memfault/owners-mcu
