@@ -35,18 +35,25 @@ jobs:
         run: |
           ${ZEPHYR_SDK_INSTALL_DIR}/setup.sh -c
 
-      - name: Build app
+      - name: Build app without Memfault overlay
         run: |
           cd $GITHUB_WORKSPACE
           cd ../
           python -m venv venv
           . venv/bin/activate
           pip install -U pip==21.1
-          pip install west==1.2.0 memfault-cli==1.0.4
+          pip install west==1.2.0
           west init -l memfault-asset-tracker
           west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements-build.txt
+          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker
+
+      - name: Build app with Memfault overlay
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ../
+          . venv/bin/activate
           west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
           -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"DUMMY_KEY\" \
           -DOVERLAY_CONFIG=overlay-memfault.conf \

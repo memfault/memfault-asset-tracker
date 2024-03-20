@@ -25,8 +25,10 @@
 #include "events/util_module_event.h"
 #include "events/modem_module_event.h"
 
+#if defined(CONFIG_MEMFAULT)
 #include "memfault/components.h"
 #include "memfault/nrfconnect_port/fota.h"
+#endif
 
 #include <zephyr/logging/log.h>
 #include <zephyr/logging/log_ctrl.h>
