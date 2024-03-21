@@ -21,31 +21,26 @@ LOG_MODULE_REGISTER(MODULE, CONFIG_CLOUD_INTEGRATION_LOG_LEVEL);
 #endif
 
 #define AWS "$aws/things/"
-#define AWS_LEN (sizeof(AWS) - 1)
 #define CFG_TOPIC AWS "%s/shadow/get/accepted/desired/cfg"
-#define CFG_TOPIC_LEN (AWS_LEN + AWS_CLOUD_CLIENT_ID_LEN + 32)
+#define CFG_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(CFG_TOPIC) - 3)
 #define BATCH_TOPIC "%s/batch"
-#define BATCH_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 6)
+#define BATCH_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(BATCH_TOPIC) - 3)
 #define MESSAGES_TOPIC "%s/messages"
-#define MESSAGES_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 9)
+#define MESSAGES_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(MESSAGES_TOPIC) - 3)
 #define GROUND_FIX_TOPIC "%s/ground-fix"
-#define GROUND_FIX_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 11)
-#define AGNSS_REQUEST_TOPIC "%s/agps/get"
-#define AGNSS_REQUEST_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 9)
-#define AGNSS_RESPONSE_TOPIC "%s/agps"
-#define AGNSS_RESPONSE_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 5)
+#define GROUND_FIX_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(GROUND_FIX_TOPIC) - 3)
+#define AGNSS_REQUEST_TOPIC "%s/agnss/get"
+#define AGNSS_REQUEST_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(AGNSS_REQUEST_TOPIC) - 3)
+#define AGNSS_RESPONSE_TOPIC "%s/agnss"
+#define AGNSS_RESPONSE_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(AGNSS_RESPONSE_TOPIC) - 3)
 #define PGPS_REQUEST_TOPIC "%s/pgps/get"
-#define PGPS_REQUEST_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 9)
+#define PGPS_REQUEST_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(PGPS_REQUEST_TOPIC) - 3)
 #define PGPS_RESPONSE_TOPIC "%s/pgps"
-#define PGPS_RESPONSE_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 5)
+#define PGPS_RESPONSE_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(PGPS_RESPONSE_TOPIC) - 3)
 #define MEMFAULT_TOPIC "%s/memfault"							\
 		IF_ENABLED(CONFIG_DEBUG_MODULE_MEMFAULT_USE_EXTERNAL_TRANSPORT,		\
 			   ("/" CONFIG_MEMFAULT_NCS_PROJECT_KEY))
-#if defined(CONFIG_DEBUG_MODULE_MEMFAULT_USE_EXTERNAL_TRANSPORT)
-#define MEMFAULT_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 9 + sizeof(CONFIG_MEMFAULT_NCS_PROJECT_KEY))
-#else
-#define MEMFAULT_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + 9)
-#endif /* if defined(CONFIG_DEBUG_MODULE_MEMFAULT_USE_EXTERNAL_TRANSPORT) */
+#define MEMFAULT_TOPIC_LEN (AWS_CLOUD_CLIENT_ID_LEN + sizeof(MEMFAULT_TOPIC) - 3)
 
 #define APP_SUB_TOPIC_IDX_CFG			0
 #define APP_SUB_TOPIC_IDX_AGNSS			1
@@ -153,8 +148,8 @@ static int populate_app_endpoint_topics(void)
 	sub_topics[APP_SUB_TOPIC_IDX_CFG].topic.utf8 = cfg_topic;
 	sub_topics[APP_SUB_TOPIC_IDX_CFG].topic.size = CFG_TOPIC_LEN;
 
-	err = snprintf(agnss_response_topic, sizeof(agnss_response_topic), AGNSS_RESPONSE_TOPIC,
-		       client_id_buf);
+	err = snprintf(agnss_response_topic, sizeof(agnss_response_topic),
+		       AGNSS_RESPONSE_TOPIC, client_id_buf);
 	if (err != AGNSS_RESPONSE_TOPIC_LEN) {
 		return -ENOMEM;
 	}
@@ -517,7 +512,7 @@ int cloud_wrap_agnss_request_send(char *buf, size_t len, bool ack, uint32_t id)
 		.len = len,
 		.message_id = id,
 		.qos = ack ? MQTT_QOS_1_AT_LEAST_ONCE : MQTT_QOS_0_AT_MOST_ONCE,
-		/* <imei>/agps/get */
+		/* <imei>/agnss/get */
 		.topic.str = pub_topics[APP_PUB_TOPIC_IDX_AGNSS].topic.utf8,
 		.topic.len = pub_topics[APP_PUB_TOPIC_IDX_AGNSS].topic.size
 	};
