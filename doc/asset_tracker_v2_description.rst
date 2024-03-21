@@ -15,6 +15,8 @@ The Asset Tracker v2 application is built on the following principles:
 * Batching of data - Data is batched to reduce the number of messages transmitted, and to be able to retain collected data while the device is offline.
 * Configurable at run time - The application behavior (for example, accelerometer sensitivity or GNSS timeout) can be configured at run time. This improves the development experience with individual devices or when debugging the device behavior in specific areas and situations. It also reduces the cost for transmitting data to the devices by reducing the frequency of sending firmware updates to the devices.
 
+.. _asset_tracker_v2_requirements:
+
 Requirements
 ************
 
@@ -33,7 +35,7 @@ Following are the cloud services that are supported by the application:
 * `AWS IoT Core`_
 * `Azure IoT Hub`_
 * `nRF Cloud`_
-* `LwM2M`_ v1.1 compliant service (for example, AVSystem's `Coiote Device Management`_, `Leshan LwM2M server <Leshan homepage_>`_).
+* `LwM2M`_ v1.1 compliant service (for example, AVSystem's `Coiote Device Management`_, `Leshan LwM2M Server <Leshan homepage_>`_).
   To know more about the AVSystem integration with |NCS|, see :ref:`ug_avsystem`.
 
 To run the application on a development kit and connect to a cloud service, you must complete the following steps:
@@ -67,7 +69,7 @@ To set up a cloud service to work with the application firmware, complete the st
 
 * Azure IoT Hub - :ref:`lib_azure_iot_hub`.
   This step retrieves a *security tag* and *ID scope* that will be needed during the configuration of the firmware.
-  Make sure to follow the steps documented in the :ref:`dps_config` section to enable Device Provisioning Service (DPS).
+  Make sure to follow the steps documented in the :ref:`configuration using DPS <dps_config>` section to enable Device Provisioning Service (DPS).
 
 * AVSystem's LwM2M Coiote Device Management - :ref:`server_setup_lwm2m_client`.
   No additional configuration is needed if the server is set up according to the linked documentation.
