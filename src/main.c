@@ -522,21 +522,6 @@ static void prv_run_memfault_fota_check(void) {
 	k_work_schedule(&s_memfault_fota_work, K_SECONDS(FOTA_WORK_ITEM_DELAY_SECONDS));
 }
 
-void memfault_fota_download_callback(const struct fota_download_evt *evt)
-{
-	switch (evt->id) {
-	case FOTA_DOWNLOAD_EVT_FINISHED:
-		MEMFAULT_LOG_INFO("OTA Complete, resetting to install update!");
-		memfault_platform_reboot();
-		break;
-	case FOTA_DOWNLOAD_EVT_ERROR:
-		MEMFAULT_LOG_ERROR("FOTA failed");
-		break;
-	default:
-		break;
-	}
-}
-
 static void prv_memfault_fota_timer_expiry_handler(struct k_timer *timer)
 {
 	ARG_UNUSED(timer);
