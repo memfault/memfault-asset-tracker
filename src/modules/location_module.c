@@ -333,6 +333,7 @@ static inline int adjust_rsrq(int input)
 static void send_cloud_location_update(const struct location_data_cloud *cloud_location_info)
 {
 	struct location_module_event *evt = new_location_module_event();
+#if defined(CONFIG_LOCATION_METHOD_CELLULAR)
 	struct location_module_neighbor_cells *evt_ncells =
 		&evt->data.cloud_location.neighbor_cells;
 	evt->data.cloud_location.neighbor_cells_valid = false;
@@ -363,6 +364,7 @@ static void send_cloud_location_update(const struct location_data_cloud *cloud_l
 				adjust_rsrq(evt_ncells->neighbor_cells[i].rsrq);
 		}
 	}
+#endif
 
 #if defined(CONFIG_LOCATION_METHOD_WIFI)
 	evt->data.cloud_location.wifi_access_points_valid = false;

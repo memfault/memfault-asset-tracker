@@ -31,7 +31,6 @@
 #include "events/data_module_event.h"
 #include "events/sensor_module_event.h"
 #include "events/util_module_event.h"
-#include "events/location_module_event.h"
 #include "events/modem_module_event.h"
 #include "events/ui_module_event.h"
 #include "events/debug_module_event.h"
@@ -47,7 +46,6 @@ struct debug_msg_data {
 		struct sensor_module_event sensor;
 		struct data_module_event data;
 		struct app_module_event app;
-		struct location_module_event location;
 		struct modem_module_event modem;
 	} module;
 };
@@ -158,15 +156,6 @@ static bool app_event_handler(const struct app_event_header *aeh)
 		message_handler(&debug_msg);
 	}
 
-	if (is_location_module_event(aeh)) {
-		struct location_module_event *event = cast_location_module_event(aeh);
-		struct debug_msg_data debug_msg = {
-			.module.location = *event
-		};
-
-		message_handler(&debug_msg);
-	}
-
 	if (is_sensor_module_event(aeh)) {
 		struct sensor_module_event *event =
 				cast_sensor_module_event(aeh);
@@ -272,36 +261,6 @@ static void send_memfault_data(void)
 	}
 }
 
-static void add_location_metrics(uint8_t satellites, uint32_t search_time,
-				 enum location_module_event_type event)
-{
-	int err;
-
-	switch (event) {
-	case LOCATION_MODULE_EVT_GNSS_DATA_READY:
-		err = MEMFAULT_METRIC_SET_UNSIGNED(gnss_time_to_fix_ms, search_time);
-		if (err) {
-			LOG_ERR("Failed updating gnss_time_to_fix_ms metric, error: %d", err);
-		}
-		break;
-	case LOCATION_MODULE_EVT_TIMEOUT:
-		err = MEMFAULT_METRIC_SET_UNSIGNED(location_timeout_search_time_ms, search_time);
-		if (err) {
-			LOG_ERR("Failed updating location_timeout_search_time_ms metric, error: %d",
-				err);
-		}
-		break;
-	default:
-		LOG_ERR("Unknown location module event.");
-		return;
-	}
-
-	err = MEMFAULT_METRIC_SET_UNSIGNED(gnss_satellites_tracked_count, satellites);
-	if (err) {
-		LOG_ERR("Failed updating gnss_satellites_tracked_count metric, error: %d", err);
-	}
-}
-
 static void memfault_handle_event(struct debug_msg_data *msg)
 {
 	if (IS_EVENT(msg, app, APP_EVT_START)) {
@@ -362,14 +321,6 @@ static void memfault_handle_event(struct debug_msg_data *msg)
 		send_memfault_data();
 		return;
 	}
-
-	if ((IS_EVENT(msg, location, LOCATION_MODULE_EVT_TIMEOUT)) ||
-	    (IS_EVENT(msg, location, LOCATION_MODULE_EVT_GNSS_DATA_READY))) {
-		add_location_metrics(msg->module.location.data.location.satellites_tracked,
-				msg->module.location.data.location.search_time,
-				msg->module.location.type);
-		return;
-	}
 }
 
 /* 1 means discharging, 0 means charging, -1 means error */
@@ -383,15 +334,10 @@ static int prv_adp536x_is_discharging(void)
 	}
 	/*
 		bits [2:0] are CHARGER_STATUS states:
-		Charger Status Bus. The following values are indications for the charger status:
-		000 = off.
-		001 = trickle charge.
-		010 = fast charge (constant current mode).
-		011 = fast charge (constant voltage mode).
-		100 = charge complete.
-		101 = LDO mode.
-		110 = trickle or fast charge timer expired.
-		111 = battery detection.
+		Charger Status Bus. The following values are indications for the charger
+	   status: 000 = off. 001 = trickle charge. 010 = fast charge (constant current
+	   mode). 011 = fast charge (constant voltage mode). 100 = charge complete. 101 =
+	   LDO mode. 110 = trickle or fast charge timer expired. 111 = battery detection.
 
 		Only 0b000 means the battery is connected and discharging.
 	*/
@@ -469,7 +415,6 @@ APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, app_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, modem_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, cloud_module_event);
-APP_EVENT_SUBSCRIBE_EARLY(MODULE, location_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, ui_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, sensor_module_event);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, data_module_event);
