@@ -99,7 +99,7 @@ This application implements full modem FOTA for the nRF91x1 DKs and for the nRF9
 To enable full modem FOTA, add the ``-DEXTRA_CONF_FILE=overlay-full_modem_fota.conf`` parameter to your build command.
 
 Also, specify your development kit version by appending it to the board name.
-For example, if your development kit version is 1.0.1, use the board name ``nrf9160dk_nrf9160_ns@1_0_1`` in your build command.
+For example, if your development kit version is 1.0.1, use the board name ``nrf9160dk@1.0.1/nrf9160/ns`` in your build command.
 
 Connection awareness
 ====================
@@ -159,7 +159,7 @@ For more information on how to set up a connection and provision certificates to
 
 .. note::
    There are no mandatory configuration settings for the :ref:`lib_nrf_cloud` library.
-   The nRF91 Series DKs and the Thingy:91 come with factory-provisioned certificates required to establish a connection to nRF Cloud.
+   The nRF91 Series DKs, the Thingy:91, and the Thingy:91 X come with factory-provisioned certificates required to establish a connection to nRF Cloud.
    The default configuration of the :ref:`lib_nrf_cloud` library uses the security tag that the nRF Cloud certificates are stored to.
 
 Configurations for AWS IoT library
@@ -188,7 +188,7 @@ If not using the default DPS (Device Provisioning Service) host, ensure that the
 Configurations for LwM2M integration layer
 ------------------------------------------
 
-When building for LwM2M, the cloud module's default configuration is to communicate with AVSystem's `Coiote Device Management`_, with a runtime provisioned `Pre-shared key (PSK)`_ set by the :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK` option.
+When building for LwM2M, the cloud module's default configuration is to communicate with AVSystem's `Coiote Device Management`_, with a runtime provisioned `pre-shared key <Pre-shared key (PSK)_>`_ set by the :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK` option.
 This enables the device to work with `Coiote Device Management`_ without provisioning the PSK to the modem before running the application.
 To allow the device to communicate with other LwM2M Servers, modify the default configuration by changing the following Kconfig options:
 

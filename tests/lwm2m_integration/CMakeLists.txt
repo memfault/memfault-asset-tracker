@@ -24,7 +24,6 @@ cmock_handle(${ZEPHYR_BASE}/include/zephyr/net/lwm2m.h lwm2m)
 cmock_handle(${ZEPHYR_NRF_MODULE_DIR}/include/net/lwm2m_client_utils.h lwm2m_client_utils)
 cmock_handle(${ZEPHYR_NRF_MODULE_DIR}/include/net/lwm2m_client_utils_location.h lwm2m_client_utils)
 cmock_handle(${ZEPHYR_NRF_MODULE_DIR}/include/modem/lte_lc.h lte_lc
-	FUNC_EXCLUDE ".*(lte_lc_rai_req|lte_lc_rai_param_set)"
 	WORD_EXCLUDE "__deprecated")
 
 # Add Unit Under Test source files
@@ -54,11 +53,11 @@ target_compile_options(app PRIVATE
 	-DCONFIG_LWM2M_INTEGRATION=y
 	-DCONFIG_LWM2M=y
 	-DCONFIG_LWM2M_ENGINE_MAX_PENDING=5
-        -DCONFIG_LWM2M_ENGINE_MAX_REPLIES=5
+	-DCONFIG_LWM2M_ENGINE_MAX_REPLIES=5
 	-DCONFIG_LWM2M_ENGINE_VALIDATION_BUFFER_SIZE=128
 	-DCONFIG_LWM2M_ENGINE_DEFAULT_LIFETIME=60
 	-DCONFIG_LWM2M_INTEGRATION_MODEM_MODE_REQUEST_RETRY_SECONDS=10
-	-DCONFIG_NET_SOCKETS_POSIX_NAMES=1
+	-DCONFIG_POSIX_API=y
 	-DCONFIG_LWM2M_CLIENT_UTILS_SECURITY_OBJ_SUPPORT=y
 	-DCONFIG_LWM2M_CLIENT_UTILS_FIRMWARE_UPDATE_OBJ_SUPPORT=y
 	-DCONFIG_CLOUD_CLIENT_ID_USE_CUSTOM=y

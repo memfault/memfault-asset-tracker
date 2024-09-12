@@ -46,7 +46,7 @@ BUILD_ASSERT(IS_ENABLED(CONFIG_NRF_CLOUD_MQTT) ||
 	     IS_ENABLED(CONFIG_LWM2M_INTEGRATION),
 	     "A cloud transport service must be enabled");
 
-#if defined(CONFIG_BOARD_QEMU_X86) || defined(CONFIG_BOARD_NATIVE_POSIX)
+#if defined(CONFIG_BOARD_NATIVE_SIM)
 BUILD_ASSERT(IS_ENABLED(CONFIG_CLOUD_CLIENT_ID_USE_CUSTOM),
 	     "Passing IMEI as cloud client ID is not supported when building for PC builds. "
 	     "This is because IMEI is retrieved from the modem and not available when running "
@@ -473,7 +473,7 @@ static void agnss_request_handle(struct nrf_modem_gnss_agnss_data_frame *incomin
 			LOG_DBG("A-GNSS request sent");
 		} else {
 			LOG_DBG("No A-GNSS data requested");
-	}
+		}
 	}
 #else /* !CONFIG_NRF_CLOUD_MQTT */
 	/* If the nRF Cloud MQTT transport is not enabled, encode the A-GNSS request and send it
@@ -515,7 +515,7 @@ static void pgps_request_handle(struct gps_pgps_request *incoming_request)
 		LOG_DBG("P-GPS request sent");
 	}
 #endif /* !CONFIG_NRF_CLOUD_MQTT */
-	}
+}
 #endif /* CONFIG_NRF_CLOUD_PGPS */
 
 static void agnss_data_handle(const uint8_t *buf, const size_t len)

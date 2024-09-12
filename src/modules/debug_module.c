@@ -300,6 +300,8 @@ static void add_location_metrics(uint8_t satellites, uint32_t search_time,
 	if (err) {
 		LOG_ERR("Failed updating gnss_satellites_tracked_count metric, error: %d", err);
 	}
+
+	memfault_metrics_heartbeat_debug_trigger();
 }
 
 static void memfault_handle_event(struct debug_msg_data *msg)
@@ -437,7 +439,7 @@ static void message_handler(struct debug_msg_data *msg)
 		/* Notify the rest of the application that it is connected to network
 		 * when building for PC.
 		 */
-		if (IS_ENABLED(CONFIG_BOARD_QEMU_X86) || IS_ENABLED(CONFIG_BOARD_NATIVE_POSIX)) {
+		if (IS_ENABLED(CONFIG_BOARD_NATIVE_SIM)) {
 			{ SEND_EVENT(debug, DEBUG_EVT_EMULATOR_INITIALIZED); }
 			SEND_EVENT(debug, DEBUG_EVT_EMULATOR_NETWORK_CONNECTED);
 		}

@@ -47,14 +47,14 @@ jobs:
           west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements-build.txt
-          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker
+          west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker
 
       - name: Build app with Memfault overlay
         run: |
           cd $GITHUB_WORKSPACE
           cd ../
           . venv/bin/activate
-          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
+          west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker -- \
           -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"DUMMY_KEY\" \
           -DOVERLAY_CONFIG=overlay-memfault.conf \
           -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
