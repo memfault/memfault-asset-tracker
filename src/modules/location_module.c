@@ -217,12 +217,15 @@ static void data_send_pvt(void)
 {
 	struct location_module_event *location_module_event = new_location_module_event();
 
-	location_module_event->data.location.pvt.longitude = pvt_data.longitude;
 	location_module_event->data.location.pvt.latitude = pvt_data.latitude;
-	location_module_event->data.location.pvt.altitude = pvt_data.altitude;
+	location_module_event->data.location.pvt.longitude = pvt_data.longitude;
 	location_module_event->data.location.pvt.accuracy = pvt_data.accuracy;
+	location_module_event->data.location.pvt.altitude = pvt_data.altitude;
+	location_module_event->data.location.pvt.altitude_accuracy = pvt_data.altitude_accuracy;
 	location_module_event->data.location.pvt.speed = pvt_data.speed;
+	location_module_event->data.location.pvt.speed_accuracy = pvt_data.speed_accuracy;
 	location_module_event->data.location.pvt.heading = pvt_data.heading;
+	location_module_event->data.location.pvt.heading_accuracy = pvt_data.heading_accuracy;
 	location_module_event->data.location.timestamp = k_uptime_get();
 	location_module_event->type = LOCATION_MODULE_EVT_GNSS_DATA_READY;
 
@@ -395,10 +398,13 @@ void location_event_handler(const struct location_event_data *event_data)
 		LOG_DBG("  method: %s", location_method_str(event_data->method));
 		LOG_DBG("  latitude: %.06f", event_data->location.latitude);
 		LOG_DBG("  longitude: %.06f", event_data->location.longitude);
-		LOG_DBG("  accuracy: %.01f m", event_data->location.accuracy);
-		LOG_DBG("  altitude: %.01f m", event_data->location.details.gnss.pvt_data.altitude);
-		LOG_DBG("  speed: %.01f m", event_data->location.details.gnss.pvt_data.speed);
-		LOG_DBG("  heading: %.01f deg", event_data->location.details.gnss.pvt_data.heading);
+		LOG_DBG("  accuracy: %.01f m", (double)event_data->location.accuracy);
+		LOG_DBG("  altitude: %.01f m",
+			(double)event_data->location.details.gnss.pvt_data.altitude);
+		LOG_DBG("  speed: %.01f m",
+			(double)event_data->location.details.gnss.pvt_data.speed);
+		LOG_DBG("  heading: %.01f deg",
+			(double)event_data->location.details.gnss.pvt_data.heading);
 
 		if (event_data->location.datetime.valid) {
 			LOG_DBG("  date: %04d-%02d-%02d",

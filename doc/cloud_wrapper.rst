@@ -53,7 +53,7 @@ The application integrates LwM2M through the following APIs:
 Bootstrapping and credential handling
 -------------------------------------
 
-When the option :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK` is enabled, the modem is provisioned at run time after boot with a `Pre-Shared Key (PSK)`_ set by :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK`.
+When the option :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK` is enabled, the modem is provisioned at run time after boot with a `pre-shared key (PSK) <Pre-Shared Key (PSK)_>`_ set by :kconfig:option:`CONFIG_LWM2M_INTEGRATION_PSK`.
 
 If :kconfig:option:`CONFIG_LWM2M_RD_CLIENT_SUPPORT_BOOTSTRAP` is enabled, the PSK is provisioned to a security tag dedicated to the bootstrap server connection.
 During bootstrapping, the application receives a separate newly generated key from the bootstrap server that is provisioned to a security tag dedicated to the management server connection.
@@ -116,38 +116,38 @@ Device-to-cloud (D2C)
 ---------------------
 
 +------------------------------+---------------------------------------------------------+
-|              Data            |            Topic                                       |
+|              Data            |            Topic                                        |
 +==============================+=========================================================+
 | A-GNSS requests              | ``<imei>/agnss/get``                                    |
 +------------------------------+---------------------------------------------------------+
-| P-GPS requests               | ``<imei>/pgps/get``                                    |
+| P-GPS requests               | ``<imei>/pgps/get``                                     |
 +------------------------------+---------------------------------------------------------+
-| Neighbor cell measurements   | ``<imei>/ncellmeas``                                   |
+| Neighbor cell measurements   | ``<imei>/ncellmeas``                                    |
 +------------------------------+---------------------------------------------------------+
-| Button presses               | ``<imei>/messages``                                    |
+| Button presses               | ``<imei>/messages``                                     |
 +------------------------------+---------------------------------------------------------+
-| Sensor/device data           | ``$aws/things/<imei>/shadow/update``                   |
+| Sensor/device data           | ``$aws/things/<imei>/shadow/update``                    |
 +------------------------------+---------------------------------------------------------+
-| Device configuration         | ``$aws/things/<imei>/shadow/update``                   |
+| Device configuration         | ``$aws/things/<imei>/shadow/update``                    |
 +------------------------------+---------------------------------------------------------+
-| Buffered sensor/device data  | ``<imei>/batch``                                       |
+| Buffered sensor/device data  | ``<imei>/batch``                                        |
 +------------------------------+---------------------------------------------------------+
 
 Cloud-to-device (C2D)
 ---------------------
 
 +------------------------------+---------------------------------------------------------+
-|              Data            |            Topic                                       |
+|              Data            |            Topic                                        |
 +==============================+=========================================================+
 | A-GNSS response              | ``<imei>/agnss``                                        |
 +------------------------------+---------------------------------------------------------+
-| P-GPS response               | ``<imei>/pgps``                                        |
+| P-GPS response               | ``<imei>/pgps``                                         |
 +------------------------------+---------------------------------------------------------+
-| Device configuration updates | ``$aws/things/<imei>/shadow/delta``                    |
+| Device configuration updates | ``$aws/things/<imei>/shadow/delta``                     |
 |                              +---------------------------------------------------------+
-|                              | ``$aws/things/<imei>/shadow/get/accepted``             |
+|                              | ``$aws/things/<imei>/shadow/get/accepted``              |
 |                              +---------------------------------------------------------+
-|                              | ``$aws/things/<imei>/shadow/get/accepted/desired/cfg`` |
+|                              | ``$aws/things/<imei>/shadow/get/accepted/desired/cfg``  |
 +------------------------------+---------------------------------------------------------+
 
 Azure IoT Hub topics
@@ -160,34 +160,34 @@ Device-to-cloud (D2C)
 ---------------------
 
 +------------------------------+---------------------------------------------+---------------+
-|               Data           |             Topic                           | Property bag |
+|               Data           |             Topic                           | Property bag  |
 +==============================+=============================================+===============+
 | A-GNSS requests              | ``devices/<imei>/messages/events/``         | ``agnss=get`` |
 +------------------------------+---------------------------------------------+---------------+
-| P-GPS requests               | ``devices/<imei>/messages/events/``         | ``pgps=get`` |
+| P-GPS requests               | ``devices/<imei>/messages/events/``         | ``pgps=get``  |
 +------------------------------+---------------------------------------------+---------------+
-| Neighbor cell measurements   | ``devices/<imei>/messages/events/``         | ``ncellmeas``|
+| Neighbor cell measurements   | ``devices/<imei>/messages/events/``         | ``ncellmeas`` |
 +------------------------------+---------------------------------------------+---------------+
-| Button presses               | ``devices/<imei>/messages/events/``         |     NA       |
+| Button presses               | ``devices/<imei>/messages/events/``         |     NA        |
 +------------------------------+---------------------------------------------+---------------+
-| Sensor/device data           | ``$iothub/twin/PATCH/properties/reported/`` |     NA       |
+| Sensor/device data           | ``$iothub/twin/PATCH/properties/reported/`` |     NA        |
 +------------------------------+---------------------------------------------+---------------+
-| Device configuration         | ``$iothub/twin/PATCH/properties/reported/`` |     NA       |
+| Device configuration         | ``$iothub/twin/PATCH/properties/reported/`` |     NA        |
 +------------------------------+---------------------------------------------+---------------+
-| Buffered sensor/device data  | ``devices/<imei>/messages/events/``         | ``batch``    |
+| Buffered sensor/device data  | ``devices/<imei>/messages/events/``         | ``batch``     |
 +------------------------------+---------------------------------------------+---------------+
 
 Cloud-to-device (C2D)
 ---------------------
 
 +------------------------------+------------------------------------------+-----------------+
-|               Data           |             Topic                        | Property bag   |
+|               Data           |             Topic                        | Property bag    |
 +==============================+==========================================+=================+
 | A-GNSS response              | ``devices/<imei>/messages/devicebound/`` | ``agnss=result``|
 +------------------------------+------------------------------------------+-----------------+
-| P-GPS response               | ``devices/<imei>/messages/devicebound/`` | ``pgps=result``|
+| P-GPS response               | ``devices/<imei>/messages/devicebound/`` | ``pgps=result`` |
 +------------------------------+------------------------------------------+-----------------+
-| Device configuration updates | ``$iothub/twin/res/<code>/``             |      NA        |
+| Device configuration updates | ``$iothub/twin/res/<code>/``             |      NA         |
 +------------------------------+------------------------------------------+-----------------+
 
 nRF Cloud topics
