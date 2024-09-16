@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       run_name:
-        description: 'Name of run to identify it from other runs'
+        description: "Name of run to identify it from other runs"
         required: false
         type: string
 
@@ -55,7 +55,7 @@ jobs:
           west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements-build.txt
-          west build -b thingy91_nrf9160_ns -p always memfault-asset-tracker -- \
+          west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker -- \
           -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"${{ secrets.THINGY91_OTA_PROJECT_KEY }}\" \
           -DOVERLAY_CONFIG=overlay-memfault.conf \
           -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
@@ -79,7 +79,7 @@ jobs:
             --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \
             --org ${{ env.MEMFAULT_ORG }} \
             --project ${{ env.MEMFAULT_PROJECT }} \
-            upload-mcu-symbols build/zephyr/zephyr.elf
+            upload-mcu-symbols build/memfault-asset-tracker/zephyr/zephyr.elf
 
           memfault \
             --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \
@@ -88,7 +88,7 @@ jobs:
             --hardware-version ${{ env.HARDWARE_VERSION }} \
             --software-type ${{ env.SOFTWARE_TYPE }} \
             --software-version ${{ env.SOFTWARE_VERSION }} \
-            build/zephyr/app_update.bin
+            build/memfault-asset-tracker/zephyr/zephyr.signed.bin
 
           memfault \
             --org-token ${{ secrets.THINGY91_OTA_ORG_TOKEN }} \

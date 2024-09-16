@@ -54,7 +54,8 @@ static int date_time_now_stub(int64_t *unix_time_ms, int no_of_calls)
  * test_codec_helpers_setup_configuration_object_handler.
  */
 static int callback(uint16_t obj_inst_id, uint16_t res_id, uint16_t res_inst_id,
-		    uint8_t *data, uint16_t data_len, bool last_block, size_t total_size)
+		    uint8_t *data, uint16_t data_len, bool last_block,
+		    size_t total_size, size_t offset)
 {
 	ARG_UNUSED(obj_inst_id);
 	ARG_UNUSED(res_id);
@@ -63,6 +64,7 @@ static int callback(uint16_t obj_inst_id, uint16_t res_id, uint16_t res_inst_id,
 	ARG_UNUSED(data_len);
 	ARG_UNUSED(last_block);
 	ARG_UNUSED(total_size);
+	ARG_UNUSED(offset);
 
 	return 0;
 }
@@ -470,12 +472,15 @@ void test_codec_helpers_get_configuration_object(void)
 void test_codec_helpers_set_gnss_data(void)
 {
 	struct cloud_data_gnss gnss = {
-		.pvt.longi = 10,
 		.pvt.lat = 62,
+		.pvt.lon = 10,
 		.pvt.acc = 24,
 		.pvt.alt = 170,
+		.pvt.alt_acc = 10,
 		.pvt.spd = 1,
+		.pvt.spd_acc = 1,
 		.pvt.hdg = 176,
+		.pvt.hdg_acc = 5,
 		.gnss_ts = 1000,
 		.queued = true,
 	};
@@ -490,7 +495,7 @@ void test_codec_helpers_set_gnss_data(void)
 		&LWM2M_OBJ(LWM2M_OBJECT_LOCATION_ID, 0, LATITUDE_RID), gnss.pvt.lat, 0);
 
 	__cmock_lwm2m_set_f64_ExpectAndReturn(
-		&LWM2M_OBJ(LWM2M_OBJECT_LOCATION_ID, 0, LONGITUDE_RID), gnss.pvt.longi, 0);
+		&LWM2M_OBJ(LWM2M_OBJECT_LOCATION_ID, 0, LONGITUDE_RID), gnss.pvt.lon, 0);
 
 	__cmock_lwm2m_set_f64_ExpectAndReturn(
 		&LWM2M_OBJ(LWM2M_OBJECT_LOCATION_ID, 0, ALTITUDE_RID), alt, 0);

@@ -47,7 +47,7 @@ static int init_security_callback_stub(struct lwm2m_ctx *ctx,
 				       struct modem_mode_change *mmode,
 				       int no_of_calls);
 static int init_firmware_cb_stub(lwm2m_firmware_event_cb_t cb,
-					   int no_of_calls);
+				 int no_of_calls);
 static void assistance_result_cb_stub(location_assistance_result_code_cb_t cb,
 				      int no_of_calls);
 

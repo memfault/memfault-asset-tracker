@@ -20,6 +20,8 @@
 #include <adp536x.h>
 #endif
 
+#include <zephyr/shell/shell.h>
+
 #define MODULE debug_module
 
 #if defined(CONFIG_WATCHDOG_APPLICATION)
@@ -300,6 +302,8 @@ static void add_location_metrics(uint8_t satellites, uint32_t search_time,
 	if (err) {
 		LOG_ERR("Failed updating gnss_satellites_tracked_count metric, error: %d", err);
 	}
+
+	memfault_metrics_heartbeat_debug_trigger();
 }
 
 static void memfault_handle_event(struct debug_msg_data *msg)
@@ -437,7 +441,7 @@ static void message_handler(struct debug_msg_data *msg)
 		/* Notify the rest of the application that it is connected to network
 		 * when building for PC.
 		 */
-		if (IS_ENABLED(CONFIG_BOARD_QEMU_X86) || IS_ENABLED(CONFIG_BOARD_NATIVE_POSIX)) {
+		if (IS_ENABLED(CONFIG_BOARD_NATIVE_SIM)) {
 			{ SEND_EVENT(debug, DEBUG_EVT_EMULATOR_INITIALIZED); }
 			SEND_EVENT(debug, DEBUG_EVT_EMULATOR_NETWORK_CONNECTED);
 		}
@@ -464,6 +468,27 @@ void memfault_metrics_heartbeat_collect_data(void)
 	/* Standard NCS metrics */
 	memfault_ncs_metrics_collect_data();
 }
+
+static int prv_batt_cmd(const struct shell *shell, size_t argc, char **argv) {
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	const int discharging = prv_adp536x_is_discharging();
+	uint8_t percentage;
+	uint16_t millivolts;
+
+	if (adp536x_fg_soc(&percentage) || adp536x_fg_volts(&millivolts) ) {
+		shell_print(shell, "Failed to get battery info");
+		return -1;
+	}
+
+	shell_print(shell, "Battery: %d%%, %d mV, %s",
+		percentage, millivolts, discharging ? "discharging" : "charging");
+
+	return 0;
+}
+
+SHELL_CMD_REGISTER(batt, NULL, "Print battery info", prv_batt_cmd);
 
 APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, app_module_event);
