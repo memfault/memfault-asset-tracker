@@ -20,6 +20,8 @@
 #include <adp536x.h>
 #endif
 
+#include <zephyr/shell/shell.h>
+
 #define MODULE debug_module
 
 #if defined(CONFIG_WATCHDOG_APPLICATION)
@@ -466,6 +468,27 @@ void memfault_metrics_heartbeat_collect_data(void)
 	/* Standard NCS metrics */
 	memfault_ncs_metrics_collect_data();
 }
+
+static int prv_batt_cmd(const struct shell *shell, size_t argc, char **argv) {
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	const int discharging = prv_adp536x_is_discharging();
+	uint8_t percentage;
+	uint16_t millivolts;
+
+	if (adp536x_fg_soc(&percentage) || adp536x_fg_volts(&millivolts) ) {
+		shell_print(shell, "Failed to get battery info");
+		return -1;
+	}
+
+	shell_print(shell, "Battery: %d%%, %d mV, %s",
+		percentage, millivolts, discharging ? "discharging" : "charging");
+
+	return 0;
+}
+
+SHELL_CMD_REGISTER(batt, NULL, "Print battery info", prv_batt_cmd);
 
 APP_EVENT_LISTENER(MODULE, app_event_handler);
 APP_EVENT_SUBSCRIBE_EARLY(MODULE, app_module_event);
