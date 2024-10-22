@@ -7,6 +7,9 @@ User Interface module
    :local:
    :depth: 2
 
+.. important::
+   |ATv2_maintenance_note|
+
 The User Interface module controls and monitors the UI elements on nRF91 Series development kits, Thingy:91, and Thingy:91 X.
 
 Features
@@ -115,5 +118,3 @@ API documentation
 | Source files: :file:`asset_tracker_v2/src/events/ui_module_event.c`, :file:`asset_tracker_v2/src/modules/ui_module.c`
 
 .. doxygengroup:: ui_module_event
-   :project: nrf
-   :members:
