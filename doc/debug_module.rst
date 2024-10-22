@@ -7,6 +7,9 @@ Debug module
    :local:
    :depth: 2
 
+.. important::
+   |ATv2_maintenance_note|
+
 The debug module intends to improve the overall debugging experience in the application.
 By default, it subscribes to all the events in the system and implements support for `Memfault`_ through the :ref:`mod_memfault` module integrated in |NCS|.
 
@@ -22,13 +25,7 @@ This section documents the various features implemented by the module.
 Memfault
 ========
 
-The debug module uses `Memfault SDK`_ to track |NCS| specific metrics such as LTE and stack metrics.
-In addition, the following types of custom Memfault metrics are defined and tracked when compiling in the debug module:
-
- * ``gnss_time_to_fix_ms`` - Time duration between the start of a GNSS search and obtaining a fix.
- * ``gnss_satellites_tracked_count`` - Number of satellites tracked during a GNSS search window.
- * ``location_timeout_search_time_ms`` - Time duration between the start of a location search and a search timeout.
-
+The debug module uses `Memfault SDK`_ to track |NCS| specific metrics such as LTE, location, Bluetooth and stack metrics.
 The debug module also implements `Memfault SDK`_ software watchdog, which is designed to trigger an assert before an actual watchdog timeout.
 This enables the application to be able to collect coredump data before a reboot occurs.
 
@@ -111,5 +108,3 @@ API documentation
 | Source files: :file:`asset_tracker_v2/src/events/debug_module_event.c`
 
 .. doxygengroup:: debug_module_event
-   :project: nrf
-   :members:

@@ -19,9 +19,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Image generated from: https://github.com/memfault/memfault-port-playground/tree/master/docker/nrf-connect-sdk
     container:
-      image: memfault/nrf-connect-sdk:2024-01-05
+      image: ghcr.io/memfault/nrf-connect-sdk:2024-10-07
     steps:
       - uses: actions/checkout@v3
 
@@ -35,7 +34,7 @@ jobs:
         run: |
           ${ZEPHYR_SDK_INSTALL_DIR}/setup.sh -c
 
-      - name: Build app without Memfault overlay
+      - name: Setup west workspace
         run: |
           cd $GITHUB_WORKSPACE
           cd ../
@@ -47,18 +46,35 @@ jobs:
           west update --narrow -o=--depth=1 -o=--recurse-submodules --path-cache ~/zephyr-thingy91-path-cache
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements-build.txt
-          west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker
+
+      - name: Build app without Memfault overlay
+        run: |
+          cd $GITHUB_WORKSPACE
+          cd ../
+          python -m venv venv
+          . venv/bin/activate
+
+          # disable building meta file, it is unexpectedly causing the build to
+          # fail in CI
+          west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker -- \
+          -DCONFIG_BUILD_OUTPUT_META=n \
+          -Dmcuboot_CONFIG_BUILD_OUTPUT_META=n
 
       - name: Build app with Memfault overlay
         run: |
           cd $GITHUB_WORKSPACE
           cd ../
           . venv/bin/activate
+
+          # disable building meta file, it is unexpectedly causing the build to
+          # fail in CI
           west build -b thingy91/nrf9160/ns -p always memfault-asset-tracker -- \
           -DCONFIG_MEMFAULT_NCS_PROJECT_KEY=\"DUMMY_KEY\" \
           -DOVERLAY_CONFIG=overlay-memfault.conf \
           -DCONFIG_MEMFAULT_NCS_FW_VERSION_STATIC=y \
-          -DCONFIG_MEMFAULT_NCS_FW_VERSION=\"${{ env.SOFTWARE_VERSION }}\"
+          -DCONFIG_MEMFAULT_NCS_FW_VERSION=\"${{ env.SOFTWARE_VERSION }}\" \
+          -DCONFIG_BUILD_OUTPUT_META=n \
+          -Dmcuboot_CONFIG_BUILD_OUTPUT_META=n
 
           rm -rf ~/zephyr-thingy91-path-cache
           cp -r ${PWD} ~/zephyr-thingy91-path-cache

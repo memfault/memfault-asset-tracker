@@ -7,6 +7,9 @@ Sensor module
    :local:
    :depth: 2
 
+.. important::
+   |ATv2_maintenance_note|
+
 The sensor module interacts with external sensors present on the `Thingy:91 <Thingy\:91 product page_>`_ and Thingy:91 X.
 It collects environmental data and detects motion over a set threshold value.
 
@@ -36,7 +39,7 @@ The following table lists the sensors and sensor data types supported by the mod
 | Acceleration (Impact)   | `ADXL372`_      |
 +-------------------------+-----------------+
 
-The module controls and collects data from the sensors by interacting with their :ref:`device drivers <device_model_api>` using :ref:`Zephyr's generic sensor API <sensor_api>`.
+The module controls and collects data from the sensors by interacting with their :ref:`device drivers <device_model_api>` using :ref:`Zephyr's generic sensor API <sensor>`.
 
 Thingy:91 X has a `BME688`_ gas sensor and `ADXL367`_ motion sensor that can be used by the :ref:`asset_tracker_v2_sensor_module` module.
 
@@ -189,7 +192,7 @@ Dependencies
 
 This module uses the following Zephyr API:
 
-* :ref:`Generic sensor API <sensor_api>`
+* :ref:`Generic sensor API <sensor>`
 
 API documentation
 *****************
@@ -199,5 +202,3 @@ API documentation
                 :file:`asset_tracker_v2/src/modules/sensor_module.c`
 
 .. doxygengroup:: sensor_module_event
-   :project: nrf
-   :members:

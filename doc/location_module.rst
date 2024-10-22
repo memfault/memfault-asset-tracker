@@ -7,6 +7,9 @@ Location module
    :local:
    :depth: 2
 
+.. important::
+   |ATv2_maintenance_note|
+
 The location module controls the GNSS, cellular and Wi-Fi positioning functionality.
 It can be used to retrieve the location of the device in the form of events containing a position, velocity and time (PVT) structure.
 
@@ -155,5 +158,3 @@ API documentation
 | Source files: :file:`asset_tracker_v2/src/events/location_module_event.c`
 
 .. doxygengroup:: location_module_event
-   :project: nrf
-   :members:
